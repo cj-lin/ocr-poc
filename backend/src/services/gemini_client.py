@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Any, Dict
+from typing import Any
 
 import google.generativeai as genai
 from PIL import Image
@@ -49,7 +49,7 @@ class GeminiClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
     )
-    async def extract_id_card_info(self, image: Image.Image) -> Dict[str, Any]:
+    async def extract_id_card_info(self, image: Image.Image) -> dict[str, Any]:
         """Extract ID card information from image using Gemini API
 
         Args:

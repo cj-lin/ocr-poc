@@ -7,7 +7,13 @@ from datetime import datetime
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 
-from ..models.schemas import ErrorResponse, ExtractionResult, HealthCheckResponse
+from ..models.schemas import (
+    BatchExtractionResult,
+    BatchFileResult,
+    ErrorResponse,
+    ExtractionResult,
+    HealthCheckResponse,
+)
 from ..services.file_service import FileService
 from ..services.ocr_service import OcrService
 from ..utils.constants import ERROR_MESSAGES
@@ -157,3 +163,124 @@ async def extract_id_card(file: UploadFile = File(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=error_response.model_dump(),
         )
+
+
+@router.post("/extract/batch", response_model=BatchExtractionResult)
+async def extract_id_cards_batch(files: list[UploadFile] = File(...)):
+    """
+    批次擷取多個身分證資訊 (User Story 3)
+    
+    支援同時上傳多個檔案，每個檔案獨立處理
+    """
+    request_id = request_id_var.get()
+    start_time = time.time()
+
+    logger.info(f"Processing batch upload: {len(files)} files")
+
+    # 驗證檔案數量
+    MAX_BATCH_SIZE = 10
+    if len(files) > MAX_BATCH_SIZE:
+        error_response = ErrorResponse(
+            request_id=request_id,
+            error_code="INVALID_FORMAT",
+            message=f"批次上傳最多支援 {MAX_BATCH_SIZE} 個檔案",
+            details=None,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=error_response.model_dump(),
+        )
+
+    results: list[BatchFileResult] = []
+    successful_count = 0
+    failed_count = 0
+
+    # 處理每個檔案
+    for file in files:
+        file_start_time = time.time()
+        filename = file.filename or "unknown"
+
+        try:
+            logger.info(f"Processing file: {filename}")
+
+            # 讀取檔案內容
+            file_content = await file.read()
+
+            # 處理檔案
+            image = await FileService.process_upload(
+                file_content, filename, file.content_type or ""
+            )
+
+            # OCR 處理
+            ocr_service = OcrService()
+            id_card_info = await ocr_service.process_image(image)
+
+            file_processing_time = time.time() - file_start_time
+
+            # 成功結果
+            results.append(
+                BatchFileResult(
+                    filename=filename,
+                    status="success",
+                    data=id_card_info,
+                    error=None,
+                    processing_time=file_processing_time,
+                )
+            )
+            successful_count += 1
+
+            logger.info(
+                f"Successfully processed {filename} in {file_processing_time:.2f}s"
+            )
+
+        except ValueError as e:
+            # 驗證錯誤或檔案處理錯誤
+            file_processing_time = time.time() - file_start_time
+            error_msg = str(e)
+
+            results.append(
+                BatchFileResult(
+                    filename=filename,
+                    status="error",
+                    data=None,
+                    error=error_msg,
+                    processing_time=file_processing_time,
+                )
+            )
+            failed_count += 1
+
+            logger.warning(f"Failed to process {filename}: {error_msg}")
+
+        except Exception as e:
+            # 未預期的錯誤
+            file_processing_time = time.time() - file_start_time
+            error_msg = "處理檔案時發生錯誤"
+
+            results.append(
+                BatchFileResult(
+                    filename=filename,
+                    status="error",
+                    data=None,
+                    error=error_msg,
+                    processing_time=file_processing_time,
+                )
+            )
+            failed_count += 1
+
+            logger.error(f"Unexpected error processing {filename}: {e}", exc_info=True)
+
+    total_processing_time = time.time() - start_time
+
+    logger.info(
+        f"Batch processing complete: {successful_count} success, {failed_count} failed, "
+        f"total time: {total_processing_time:.2f}s"
+    )
+
+    return BatchExtractionResult(
+        request_id=request_id,
+        total_files=len(files),
+        successful_files=successful_count,
+        failed_files=failed_count,
+        results=results,
+        processing_time=total_processing_time,
+    )

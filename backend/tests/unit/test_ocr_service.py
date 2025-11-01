@@ -17,8 +17,11 @@ def mock_image():
 
 @pytest.fixture
 def ocr_service():
-    """Create OcrService instance"""
-    return OcrService()
+    """Create OcrService instance with mocked GeminiClient"""
+    with patch("src.services.ocr_service.GeminiClient") as mock_client:
+        mock_client.return_value = MagicMock()
+        service = OcrService()
+        return service
 
 
 @pytest.mark.asyncio
@@ -34,17 +37,14 @@ async def test_process_image_success(ocr_service, mock_image):
         "confidence_score": 0.95,
     }
 
-    with patch.object(
-        ocr_service.gemini_client,
-        "extract_id_card_info",
-        return_value=mock_data,
-    ):
-        result = await ocr_service.process_image(mock_image)
+    ocr_service.gemini_client.extract_id_card_info = AsyncMock(return_value=mock_data)
+    
+    result = await ocr_service.process_image(mock_image)
 
-        assert isinstance(result, IdCardInfo)
-        assert result.name == "王小明"
-        assert result.id_number == "A123456789"
-        assert result.confidence_score == 0.95
+    assert isinstance(result, IdCardInfo)
+    assert result.name == "王小明"
+    assert result.id_number == "A123456789"
+    assert result.confidence_score == 0.95
 
 
 @pytest.mark.asyncio
@@ -59,13 +59,10 @@ async def test_process_image_validation_error(ocr_service, mock_image):
         "issue_location": "台北市",
     }
 
-    with patch.object(
-        ocr_service.gemini_client,
-        "extract_id_card_info",
-        return_value=mock_data,
-    ):
-        with pytest.raises(ValueError):
-            await ocr_service.process_image(mock_image)
+    ocr_service.gemini_client.extract_id_card_info = AsyncMock(return_value=mock_data)
+    
+    with pytest.raises(ValueError):
+        await ocr_service.process_image(mock_image)
 
 
 @pytest.mark.asyncio
@@ -77,13 +74,10 @@ async def test_process_image_missing_fields(ocr_service, mock_image):
         # Missing other required fields
     }
 
-    with patch.object(
-        ocr_service.gemini_client,
-        "extract_id_card_info",
-        return_value=mock_data,
-    ):
-        with pytest.raises(ValueError):
-            await ocr_service.process_image(mock_image)
+    ocr_service.gemini_client.extract_id_card_info = AsyncMock(return_value=mock_data)
+    
+    with pytest.raises(ValueError):
+        await ocr_service.process_image(mock_image)
 
 
 @pytest.mark.asyncio
@@ -99,13 +93,10 @@ async def test_process_image_partial_success(ocr_service, mock_image):
         "confidence_score": 0.67,
     }
 
-    with patch.object(
-        ocr_service.gemini_client,
-        "extract_id_card_info",
-        return_value=mock_data,
-    ):
-        result = await ocr_service.process_image(mock_image)
+    ocr_service.gemini_client.extract_id_card_info = AsyncMock(return_value=mock_data)
+    
+    result = await ocr_service.process_image(mock_image)
 
-        assert isinstance(result, IdCardInfo)
-        assert result.name == "李小華"
-        assert result.confidence_score == 0.67
+    assert isinstance(result, IdCardInfo)
+    assert result.name == "李小華"
+    assert result.confidence_score == 0.67

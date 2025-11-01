@@ -18,6 +18,8 @@ AI-generated guidance for the Taiwan ID Card OCR extraction system. Last updated
 
 **Error Handling**: Request IDs tracked via context vars (`request_id_var`). All errors return structured `ErrorResponse` with error codes like `INVALID_FORMAT`, `FILE_TOO_LARGE`. See `constants.py:ERROR_MESSAGES`.
 
+**Batch Processing**: `/api/extract/batch` endpoint accepts up to 10 files simultaneously. Each file processed independently with individual success/error status in `BatchExtractionResult`. See `routes.py:extract_id_cards_batch()`.
+
 ## Key Technologies
 
 **Backend**: Python 3.11+, FastAPI 0.115+, Pydantic 2.9 (validation), Gemini 1.5 Flash API, Pillow + PyMuPDF, Tenacity (retry logic)
@@ -28,20 +30,32 @@ AI-generated guidance for the Taiwan ID Card OCR extraction system. Last updated
 
 ## Essential Commands
 
+**Prefer `just` commands** (see `justfile` for full list):
 ```bash
-# Start full stack (requires .env with GEMINI_API_KEY)
+just                     # Show all commands
+just up                  # Start Docker services
+just test-all            # Run all tests
+just test-backend-unit   # Backend unit tests (fast)
+just lint-all-fix        # Fix all formatting
+just ci                  # Full CI check (lint + test)
+```
+
+**Manual commands** (if needed):
+```bash
+# Docker
 docker-compose up --build
+docker-compose logs -f backend
 
-# Backend dev (from backend/)
-pytest                                    # Run all tests
-pytest tests/unit/test_ocr_service.py    # Specific test
-ruff check src/                          # Lint
-black --check src/                       # Format check
+# Backend (from backend/)
+pytest tests/unit/                       # Unit tests
+pytest --cov=src --cov-report=html       # With coverage
+ruff check src/ --fix                    # Lint & fix
+black src/                               # Format
 
-# Frontend dev (from frontend/)
+# Frontend (from frontend/)
 npm run dev                              # Dev server
 npm run test                             # Vitest tests
-npm run lint                             # ESLint
+npm run lint:fix                         # ESLint fix
 ```
 
 ## Project-Specific Patterns
@@ -76,6 +90,7 @@ Every request gets UUID injected via `request_id_var` context var and returned i
 - **Pydantic models**: Define examples in `Config.json_schema_extra` for OpenAPI docs
 - **File validation**: Always chain: size → MIME type → extension (see `file_service.py:validate_upload()`)
 - **Test fixtures**: Create via `create_test_image()` helper, mock Gemini responses in JSON
+- **Docker volumes**: Mount source directories with excluded cache folders (`/app/.venv`, `/app/node_modules`) for hot reload
 
 ## Testing Patterns
 

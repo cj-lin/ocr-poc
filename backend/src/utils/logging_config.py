@@ -5,7 +5,7 @@ import logging
 import sys
 from contextvars import ContextVar
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 # Context variable for request ID
 request_id_var: ContextVar[str] = ContextVar("request_id", default="")
@@ -15,7 +15,7 @@ class StructuredFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
 
     def format(self, record: logging.LogRecord) -> str:
-        log_data: Dict[str, Any] = {
+        log_data: dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "level": record.levelname,
             "request_id": request_id_var.get(""),

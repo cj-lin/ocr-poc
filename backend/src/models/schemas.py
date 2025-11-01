@@ -1,7 +1,7 @@
 """Pydantic schemas for request/response models"""
 
 import re
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -17,7 +17,7 @@ class IdCardInfo(BaseModel):
     gender: Literal["男", "女"] = Field(..., description="性別")
     issue_date: str = Field(..., description="發證日期(民國年格式 YYY/MM/DD)")
     issue_location: str = Field(..., description="發證地點(台灣縣市)")
-    confidence_score: Optional[float] = Field(
+    confidence_score: float | None = Field(
         None, ge=0.0, le=1.0, description="辨識信心分數(由 Gemini API 提供)"
     )
 
@@ -66,7 +66,7 @@ class ExtractionResult(BaseModel):
     status: Literal["success", "partial"] = Field(..., description="處理狀態")
     data: IdCardInfo = Field(..., description="擷取的身分證資訊")
     processing_time: float = Field(..., ge=0, description="處理耗時(秒)")
-    warnings: Optional[list[str]] = Field(None, description="警告訊息")
+    warnings: list[str] | None = Field(None, description="警告訊息")
 
     class Config:
         json_schema_extra = {
@@ -101,7 +101,7 @@ class ErrorResponse(BaseModel):
         "VALIDATION_ERROR",
     ] = Field(..., description="錯誤代碼")
     message: str = Field(..., description="使用者友善的錯誤訊息")
-    details: Optional[str] = Field(None, description="技術細節(僅開發模式)")
+    details: str | None = Field(None, description="技術細節(僅開發模式)")
 
     class Config:
         json_schema_extra = {
@@ -122,12 +122,55 @@ class HealthCheckResponse(BaseModel):
     timestamp: str = Field(..., description="檢查時間戳記")
 
 
+class BatchFileResult(BaseModel):
+    """單一檔案的批次處理結果"""
+
+    filename: str = Field(..., description="檔案名稱")
+    status: Literal["success", "error"] = Field(..., description="處理狀態")
+    data: IdCardInfo | None = Field(None, description="擷取的資料（成功時）")
+    error: str | None = Field(None, description="錯誤訊息（失敗時）")
+    processing_time: float = Field(..., ge=0, description="處理時間（秒）")
+
+
 class BatchExtractionResult(BaseModel):
-    """批次擷取結果 (US3)"""
+    """批次擷取回應"""
 
     request_id: str = Field(..., description="請求追蹤 ID")
-    total: int = Field(..., ge=1, description="總檔案數")
-    processed: int = Field(..., ge=0, description="已處理檔案數")
-    results: list[ExtractionResult] = Field(..., description="各檔案的擷取結果")
-    failed: list[ErrorResponse] = Field(default_factory=list, description="失敗的檔案")
-    processing_time: float = Field(..., ge=0, description="總處理時間(秒)")
+    total_files: int = Field(..., ge=1, description="總檔案數")
+    successful_files: int = Field(..., ge=0, description="成功處理的檔案數")
+    failed_files: int = Field(..., ge=0, description="失敗的檔案數")
+    results: list[BatchFileResult] = Field(..., description="各檔案的處理結果")
+    processing_time: float = Field(..., ge=0, description="總處理時間（秒）")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "request_id": "550e8400-e29b-41d4-a716-446655440000",
+                "total_files": 3,
+                "successful_files": 2,
+                "failed_files": 1,
+                "results": [
+                    {
+                        "filename": "id1.jpg",
+                        "status": "success",
+                        "data": {
+                            "name": "王小明",
+                            "id_number": "A123456789",
+                            "birth_date": "80/05/20",
+                            "gender": "男",
+                            "issue_date": "95/12/01",
+                            "issue_location": "台北市",
+                        },
+                        "processing_time": 3.2,
+                    },
+                    {
+                        "filename": "id2.jpg",
+                        "status": "error",
+                        "data": None,
+                        "error": "無法辨識圖片內容",
+                        "processing_time": 1.5,
+                    },
+                ],
+                "processing_time": 4.7,
+            }
+        }

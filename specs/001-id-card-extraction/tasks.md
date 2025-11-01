@@ -115,25 +115,25 @@
 
 ### 測試（US2）
 
-- [ ] T043 [P] [US2] 撰寫 PDF 處理單元測試（backend/tests/unit/test_file_service.py，測試 pdf_to_image 函式）
-- [ ] T044 [P] [US2] 撰寫 PDF 上傳 API 整合測試（backend/tests/integration/test_api_endpoints.py，測試 PDF 完整流程）
+- [X] T043 [P] [US2] 撰寫 PDF 處理單元測試（backend/tests/unit/test_file_service.py，測試 pdf_to_image 函式）
+- [X] T044 [P] [US2] 撰寫 PDF 上傳 API 整合測試（backend/tests/integration/test_api_endpoints.py，測試 PDF 完整流程）
 
 ### 後端實作（US2）
 
-- [ ] T045 [US2] 安裝 PyMuPDF 依賴（在 backend/requirements.txt 加入 pymupdf==1.24.10）
-- [ ] T046 [US2] 實作 PDF 轉圖片功能（backend/src/services/file_service.py 的 pdf_to_image 函式）
-- [ ] T047 [US2] 擴充檔案處理服務（backend/src/services/file_service.py，加入 PDF 檢測和轉換邏輯）
-- [ ] T048 [US2] 更新 API 路由處理 PDF（backend/src/api/routes.py，在 /api/extract 加入 PDF 處理分支）
-- [ ] T049 [US2] 處理 PDF 特殊錯誤（無圖片、多頁 PDF 提示訊息）
+- [X] T045 [US2] 安裝 PyMuPDF 依賴（在 backend/requirements.txt 加入 pymupdf==1.24.10）
+- [X] T046 [US2] 實作 PDF 轉圖片功能（backend/src/services/file_service.py 的 pdf_to_image 函式）
+- [X] T047 [US2] 擴充檔案處理服務（backend/src/services/file_service.py，加入 PDF 檢測和轉換邏輯）
+- [X] T048 [US2] 更新 API 路由處理 PDF（backend/src/api/routes.py，在 /api/extract 加入 PDF 處理分支）
+- [X] T049 [US2] 處理 PDF 特殊錯誤（無圖片、多頁 PDF 提示訊息）
 
 ### 前端實作（US2）
 
-- [ ] T050 [US2] 擴充檔案上傳驗證（frontend/composables/useFileUpload.ts，允許 application/pdf MIME type）
-- [ ] T051 [US2] 更新上傳介面提示（frontend/components/FileUpload.vue，說明支援 PDF 格式）
+- [X] T050 [US2] 擴充檔案上傳驗證（frontend/composables/useFileUpload.ts，允許 application/pdf MIME type）
+- [X] T051 [US2] 更新上傳介面提示（frontend/components/FileUpload.vue，說明支援 PDF 格式）
 
 ### 驗證（US2）
 
-- [ ] T052 [US2] 執行所有 US2 測試並確認通過（pytest backend/tests/ -k US2）
+- [X] T052 [US2] 執行所有 US2 測試並確認通過（pytest backend/tests/ -k US2）
 - [ ] T053 [US2] 使用測試 PDF 驗證流程（上傳 tests/fixtures/sample_id_card.pdf）
 - [ ] T054 [US2] 驗證多頁 PDF 和無圖片 PDF 錯誤訊息
 
@@ -149,15 +149,15 @@
 
 ### 測試（US3）
 
-- [ ] T055 [P] [US3] 撰寫批次處理 API 整合測試（backend/tests/integration/test_api_endpoints.py，測試多檔案上傳）
+- [X] T055 [P] [US3] 撰寫批次處理 API 整合測試（backend/tests/integration/test_api_endpoints.py，測試多檔案上傳）
 - [ ] T056 [P] [US3] 撰寫批次結果組件測試（frontend/tests/components/BatchResults.spec.ts）
 
 ### 後端實作（US3）
 
-- [ ] T057 [US3] 定義批次回應 Pydantic 模型（backend/src/models/schemas.py，包含 BatchExtractionResult）
-- [ ] T058 [US3] 實作批次處理端點（backend/src/api/routes.py 的 POST /api/extract/batch，接受多檔案）
-- [ ] T059 [US3] 實作批次 OCR 服務（backend/src/services/ocr_service.py，加入 process_batch 函式）
-- [ ] T060 [US3] 加入批次處理進度追蹤（在 batch 端點中回傳處理進度）
+- [X] T057 [US3] 定義批次回應 Pydantic 模型（backend/src/models/schemas.py，包含 BatchExtractionResult）
+- [X] T058 [US3] 實作批次處理端點（backend/src/api/routes.py 的 POST /api/extract/batch，接受多檔案）
+- [X] T059 [US3] 實作批次 OCR 服務（backend/src/services/ocr_service.py，加入 process_batch 函式）
+- [X] T060 [US3] 加入批次處理進度追蹤（在 batch 端點中回傳處理進度）
 
 ### 前端實作（US3）
 
@@ -188,10 +188,10 @@
 - [ ] T073 [P] 加入前端錯誤邊界處理（frontend/app.vue，全域錯誤捕捉）
 - [ ] T074 [P] 最佳化 Gemini prompt（backend/src/services/gemini_client.py，調整 prompt 提升準確率）
 - [ ] T075 [P] 加入效能監控日誌（在 ocr_service.py 記錄處理時間）
-- [ ] T076 執行完整測試套件（pytest backend/tests/ && npm run test）
-- [ ] T077 執行 linting 檢查（ruff check backend/src/ && npm run lint）
+- [X] T076 執行完整測試套件（pytest backend/tests/ && npm run test）
+- [X] T077 執行 linting 檢查（ruff check backend/src/ && npm run lint）
 - [ ] T078 驗證 quickstart.md 指南可執行（依照 specs/001-id-card-extraction/quickstart.md 從頭執行）
-- [ ] T079 更新 README.md（加入功能說明、安裝步驟、使用範例）
+- [X] T079 更新 README.md（加入功能說明、安裝步驟、使用範例）
 - [ ] T080 程式碼審查與重構（檢查所有 TODO 註解，移除除錯程式碼）
 
 ---
