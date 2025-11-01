@@ -20,18 +20,18 @@
 
 ---
 
-## Phase 1: Setup（專案初始化）
+## Phase 1: Setup(專案初始化)
 
 **Purpose**: 建立專案基礎結構和開發環境
 
-- [ ] T001 建立專案根目錄結構（backend/、frontend/、docker-compose.yml、.env.example）
-- [ ] T002 [P] 初始化後端 Python 專案（backend/requirements.txt、backend/pyproject.toml）
-- [ ] T003 [P] 初始化前端 Nuxt 4 專案（frontend/package.json、frontend/nuxt.config.ts、frontend/tsconfig.json）
-- [ ] T004 [P] 設定 Docker Compose 開發環境（docker-compose.yml，包含 backend 和 frontend 服務）
-- [ ] T005 [P] 建立環境變數範本（.env.example，包含 GEMINI_API_KEY、BACKEND_URL、LOG_LEVEL）
-- [ ] T006 [P] 設定後端 linting 工具（backend/.ruff.toml、backend/pyproject.toml 的 Black 設定）
-- [ ] T007 [P] 設定前端 linting 工具（frontend/.eslintrc.js、frontend/.prettierrc）
-- [ ] T008 建立專案 README.md（快速開始指南參考 specs/001-id-card-extraction/quickstart.md）
+- [X] T001 建立專案根目錄結構(backend/、frontend/、docker-compose.yml、.env.example)
+- [X] T002 [P] 初始化後端 Python 專案(backend/requirements.txt、backend/pyproject.toml)
+- [X] T003 [P] 初始化前端 Nuxt 4 專案(frontend/package.json、frontend/nuxt.config.ts、frontend/tsconfig.json)
+- [X] T004 [P] 設定 Docker Compose 開發環境(docker-compose.yml,包含 backend 和 frontend 服務)
+- [X] T005 [P] 建立環境變數範本(.env.example,包含 GEMINI_API_KEY、BACKEND_URL、LOG_LEVEL)
+- [X] T006 [P] 設定後端 linting 工具(backend/.ruff.toml、backend/pyproject.toml 的 Black 設定)
+- [X] T007 [P] 設定前端 linting 工具(frontend/.eslintrc.js、frontend/.prettierrc)
+- [X] T008 建立專案 README.md(快速開始指南參考 specs/001-id-card-extraction/quickstart.md)
 
 ---
 
@@ -43,20 +43,20 @@
 
 ### 後端基礎
 
-- [ ] T009 建立 FastAPI 應用程式入口（backend/src/main.py，包含 CORS 設定）
-- [ ] T010 [P] 實作結構化日誌設定（backend/src/utils/logging_config.py，包含 JSON formatter 和 request_id）
-- [ ] T011 [P] 建立 Pydantic schemas 基礎檔案（backend/src/models/__init__.py 和 backend/src/models/schemas.py 架構）
-- [ ] T012 實作請求追蹤中介軟體（backend/src/main.py 中的 add_request_id middleware）
-- [ ] T013 [P] 建立錯誤代碼對應表（backend/src/utils/constants.py，定義 ERROR_MESSAGES）
-- [ ] T014 [P] 實作自訂異常處理器（backend/src/main.py 中的 exception handlers）
-- [ ] T015 實作健康檢查端點（backend/src/api/routes.py 的 /api/health）
+- [X] T009 建立 FastAPI 應用程式入口(backend/src/main.py,包含 CORS 設定)
+- [X] T010 [P] 實作結構化日誌設定(backend/src/utils/logging_config.py,包含 JSON formatter 和 request_id)
+- [X] T011 [P] 建立 Pydantic schemas 基礎檔案(backend/src/models/__init__.py 和 backend/src/models/schemas.py 架構)
+- [X] T012 實作請求追蹤中介軟體(backend/src/main.py 中的 add_request_id middleware)
+- [X] T013 [P] 建立錯誤代碼對應表(backend/src/utils/constants.py,定義 ERROR_MESSAGES)
+- [X] T014 [P] 實作自訂異常處理器(backend/src/main.py 中的 exception handlers)
+- [X] T015 實作健康檢查端點(backend/src/api/routes.py 的 /api/health)
 
 ### 前端基礎
 
-- [ ] T016 設定 TailwindCSS（frontend/tailwind.config.js 和 frontend/nuxt.config.ts 整合）
-- [ ] T017 [P] 建立 TypeScript 類型定義（frontend/types/index.ts，包含 IdCardInfo、ExtractionResult、ErrorResponse）
-- [ ] T018 建立 Nuxt 根組件（frontend/app.vue，基本佈局）
-- [ ] T019 建立主頁面架構（frontend/pages/index.vue，空白頁面架構）
+- [X] T016 設定 TailwindCSS(frontend/tailwind.config.js 和 frontend/nuxt.config.ts 整合)
+- [X] T017 [P] 建立 TypeScript 類型定義(frontend/types/index.ts,包含 IdCardInfo、ExtractionResult、ErrorResponse)
+- [X] T018 建立 Nuxt 根組件(frontend/app.vue,基本佈局)
+- [X] T019 建立主頁面架構(frontend/pages/index.vue,空白頁面架構)
 
 **Checkpoint**: 基礎架構完成 - User Story 實作可開始
 
@@ -68,34 +68,34 @@
 
 **Independent Test**: 上傳一張標準身分證圖片，驗證所有欄位正確顯示且可編輯
 
-### 測試（US1）- 必須先寫且失敗
+### 測試(US1) - 必須先寫且失敗
 
-- [ ] T020 [P] [US1] 撰寫檔案驗證單元測試（backend/tests/unit/test_validators.py，測試檔案大小、MIME 類型、檔案名稱驗證）
-- [ ] T021 [P] [US1] 撰寫 Gemini 客戶端單元測試（backend/tests/unit/test_gemini_client.py，mock Gemini API 回應）
-- [ ] T022 [P] [US1] 撰寫 OCR 服務單元測試（backend/tests/unit/test_ocr_service.py，mock Gemini client）
-- [ ] T023 [P] [US1] 撰寫圖片上傳 API 整合測試（backend/tests/integration/test_api_endpoints.py，測試 /api/extract 完整流程）
-- [ ] T024 [P] [US1] 撰寫 FileUpload 組件測試（frontend/tests/components/FileUpload.spec.ts，測試檔案選擇、拖放、驗證）
-- [ ] T025 [P] [US1] 撰寫 EditableForm 組件測試（frontend/tests/components/EditableForm.spec.ts，測試欄位編輯、驗證）
+- [X] T020 [P] [US1] 撰寫檔案驗證單元測試(backend/tests/unit/test_validators.py,測試檔案大小、MIME 類型、檔案名稱驗證)
+- [X] T021 [P] [US1] 撰寫 Gemini 客戶端單元測試(backend/tests/unit/test_gemini_client.py,mock Gemini API 回應)
+- [X] T022 [P] [US1] 撰寫 OCR 服務單元測試(backend/tests/unit/test_ocr_service.py,mock Gemini client)
+- [X] T023 [P] [US1] 撰寫圖片上傳 API 整合測試(backend/tests/integration/test_api_endpoints.py,測試 /api/extract 完整流程)
+- [X] T024 [P] [US1] 撰寫 FileUpload 組件測試(frontend/tests/components/FileUpload.spec.ts,測試檔案選擇、拖放、驗證)
+- [X] T025 [P] [US1] 撰寫 EditableForm 組件測試(frontend/tests/components/EditableForm.spec.ts,測試欄位編輯、驗證)
 
-### 後端實作（US1）
+### 後端實作(US1)
 
-- [ ] T026 [P] [US1] 實作檔案驗證工具（backend/src/utils/validators.py，包含 validate_file_size、validate_mime_type）
-- [ ] T027 [P] [US1] 定義 Pydantic 模型（backend/src/models/schemas.py，包含 IdCardInfo、ExtractionResult、ErrorResponse）
-- [ ] T028 [US1] 實作 Gemini API 客戶端（backend/src/services/gemini_client.py，包含 prompt 設計和 retry 邏輯）
-- [ ] T029 [US1] 實作檔案處理服務（backend/src/services/file_service.py，包含圖片讀取和驗證）
-- [ ] T030 [US1] 實作 OCR 服務（backend/src/services/ocr_service.py，整合 Gemini client 和欄位驗證）
-- [ ] T031 [US1] 實作圖片上傳 API 路由（backend/src/api/routes.py 的 POST /api/extract，處理圖片上傳）
-- [ ] T032 [US1] 加入結構化日誌記錄（在 ocr_service.py 和 routes.py 中記錄處理過程）
+- [X] T026 [P] [US1] 實作檔案驗證工具(backend/src/utils/validators.py,包含 validate_file_size、validate_mime_type)
+- [X] T027 [P] [US1] 定義 Pydantic 模型(backend/src/models/schemas.py,包含 IdCardInfo、ExtractionResult、ErrorResponse)
+- [X] T028 [US1] 實作 Gemini API 客戶端(backend/src/services/gemini_client.py,包含 prompt 設計和 retry 邏輯)
+- [X] T029 [US1] 實作檔案處理服務(backend/src/services/file_service.py,包含圖片讀取和驗證)
+- [X] T030 [US1] 實作 OCR 服務(backend/src/services/ocr_service.py,整合 Gemini client 和欄位驗證)
+- [X] T031 [US1] 實作圖片上傳 API 路由(backend/src/api/routes.py 的 POST /api/extract,處理圖片上傳)
+- [X] T032 [US1] 加入結構化日誌記錄(在 ocr_service.py 和 routes.py 中記錄處理過程)
 
-### 前端實作（US1）
+### 前端實作(US1)
 
-- [ ] T033 [P] [US1] 實作檔案上傳 composable（frontend/composables/useFileUpload.ts，包含驗證、拖放、進度）
-- [ ] T034 [P] [US1] 實作 API 呼叫 composable（frontend/composables/useOcrApi.ts，包含錯誤處理）
-- [ ] T035 [P] [US1] 建立 FileUpload 組件（frontend/components/FileUpload.vue，拖放區域 + 檔案選擇）
-- [ ] T036 [P] [US1] 建立 ExtractionResult 組件（frontend/components/ExtractionResult.vue，顯示擷取結果）
-- [ ] T037 [P] [US1] 建立 EditableForm 組件（frontend/components/EditableForm.vue，6 個可編輯欄位）
-- [ ] T038 [US1] 整合主頁面（frontend/pages/index.vue，組合所有組件並實作上傳流程）
-- [ ] T039 [US1] 實作載入指示器和錯誤訊息顯示（在 index.vue 中加入 UI 狀態管理）
+- [X] T033 [P] [US1] 實作檔案上傳 composable(frontend/composables/useFileUpload.ts,包含驗證、拖放、進度)
+- [X] T034 [P] [US1] 實作 API 呼叫 composable(frontend/composables/useOcrApi.ts,包含錯誤處理)
+- [X] T035 [P] [US1] 建立 FileUpload 組件(frontend/components/FileUpload.vue,拖放區域 + 檔案選擇)
+- [X] T036 [P] [US1] 建立 ExtractionResult 組件(frontend/components/ExtractionResult.vue,顯示擷取結果)
+- [X] T037 [P] [US1] 建立 EditableForm 組件(frontend/components/EditableForm.vue,6 個可編輯欄位)
+- [X] T038 [US1] 整合主頁面(frontend/pages/index.vue,組合所有組件並實作上傳流程)
+- [X] T039 [US1] 實作載入指示器和錯誤訊息顯示(在 index.vue 中加入 UI 狀態管理)
 
 ### 驗證（US1）
 
