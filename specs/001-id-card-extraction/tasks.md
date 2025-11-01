@@ -99,7 +99,7 @@
 
 ### 驗證（US1）
 
-- [ ] T040 [US1] 執行所有 US1 測試並確認通過（pytest backend/tests/ -k US1, npm run test -- FileUpload EditableForm）
+- [X] T040 [US1] 執行所有 US1 測試並確認通過（pytest backend/tests/ -k US1, npm run test -- FileUpload EditableForm）
 - [ ] T041 [US1] 使用測試圖片驗證完整流程（上傳 tests/fixtures/valid_id_card.jpg）
 - [ ] T042 [US1] 驗證錯誤情境（檔案過大、格式錯誤、Gemini API 錯誤）
 

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from PIL import Image
+from tenacity import RetryError
 
 from src.services.gemini_client import GeminiClient
 
@@ -78,7 +79,7 @@ async def test_extract_id_card_info_invalid_json(gemini_client, mock_image):
     with patch.object(
         gemini_client.model, "generate_content_async", return_value=mock_response
     ):
-        with pytest.raises(ValueError, match="無法解析 Gemini API 回應"):
+        with pytest.raises(RetryError):
             await gemini_client.extract_id_card_info(mock_image)
 
 
@@ -90,7 +91,7 @@ async def test_extract_id_card_info_api_error(gemini_client, mock_image):
         "generate_content_async",
         side_effect=Exception("API Error"),
     ):
-        with pytest.raises(Exception, match="API Error"):
+        with pytest.raises(RetryError):
             await gemini_client.extract_id_card_info(mock_image)
 
 

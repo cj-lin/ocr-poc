@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi.responses import JSONResponse
 
 from ..models.schemas import ErrorResponse, ExtractionResult, HealthCheckResponse
 from ..services.file_service import FileService
@@ -55,7 +56,7 @@ async def extract_id_card(file: UploadFile = File(...)):
 
     logger.info(
         f"Processing file upload: {file.filename}",
-        extra={"filename": file.filename, "content_type": file.content_type},
+        extra={"uploaded_filename": file.filename, "content_type": file.content_type},
     )
 
     try:
@@ -64,14 +65,15 @@ async def extract_id_card(file: UploadFile = File(...)):
 
         # Validate file size first
         if len(file_content) > 10 * 1024 * 1024:
-            raise HTTPException(
+            error_response = ErrorResponse(
+                request_id=request_id,
+                error_code="FILE_TOO_LARGE",
+                message=ERROR_MESSAGES["FILE_TOO_LARGE"],
+                details=None,
+            )
+            return JSONResponse(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=ErrorResponse(
-                    request_id=request_id,
-                    error_code="FILE_TOO_LARGE",
-                    message=ERROR_MESSAGES["FILE_TOO_LARGE"],
-                    details=None,
-                ).model_dump(),
+                content=error_response.model_dump(),
             )
 
         # Validate and process file
@@ -83,17 +85,19 @@ async def extract_id_card(file: UploadFile = File(...)):
             error_msg = str(e)
             error_code = "INVALID_FORMAT"
 
-            if "PDF" in error_msg:
+            # Check for PDF-specific errors (not just any message containing "PDF")
+            if "無法處理 PDF" in error_msg or "PDF 無有效頁面" in error_msg:
                 error_code = "NO_IMAGE_IN_PDF"
 
-            raise HTTPException(
+            error_response = ErrorResponse(
+                request_id=request_id,
+                error_code=error_code,
+                message=ERROR_MESSAGES.get(error_code, str(e)),
+                details=error_msg if os.getenv("DEBUG") else None,
+            )
+            return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=ErrorResponse(
-                    request_id=request_id,
-                    error_code=error_code,
-                    message=ERROR_MESSAGES.get(error_code, str(e)),
-                    details=error_msg if os.getenv("DEBUG") else None,
-                ).model_dump(),
+                content=error_response.model_dump(),
             )
 
         # Process OCR
@@ -102,14 +106,15 @@ async def extract_id_card(file: UploadFile = File(...)):
             id_card_info = await ocr_service.process_image(image)
         except ValueError as e:
             logger.error(f"OCR validation error: {e}")
-            raise HTTPException(
+            error_response = ErrorResponse(
+                request_id=request_id,
+                error_code="VALIDATION_ERROR",
+                message=ERROR_MESSAGES["VALIDATION_ERROR"],
+                details=str(e) if os.getenv("DEBUG") else None,
+            )
+            return JSONResponse(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=ErrorResponse(
-                    request_id=request_id,
-                    error_code="VALIDATION_ERROR",
-                    message=ERROR_MESSAGES["VALIDATION_ERROR"],
-                    details=str(e) if os.getenv("DEBUG") else None,
-                ).model_dump(),
+                content=error_response.model_dump(),
             )
 
         processing_time = time.time() - start_time
@@ -142,12 +147,13 @@ async def extract_id_card(file: UploadFile = File(...)):
         raise
     except Exception as e:
         logger.error(f"Unexpected error during extraction: {e}", exc_info=True)
-        raise HTTPException(
+        error_response = ErrorResponse(
+            request_id=request_id,
+            error_code="OCR_FAILED",
+            message=ERROR_MESSAGES["OCR_FAILED"],
+            details=str(e) if os.getenv("DEBUG") else None,
+        )
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=ErrorResponse(
-                request_id=request_id,
-                error_code="OCR_FAILED",
-                message=ERROR_MESSAGES["OCR_FAILED"],
-                details=str(e) if os.getenv("DEBUG") else None,
-            ).model_dump(),
+            content=error_response.model_dump(),
         )

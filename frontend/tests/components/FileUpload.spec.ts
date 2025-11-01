@@ -48,27 +48,35 @@ describe('FileUpload Component', () => {
     expect(wrapper.emitted('error')).toBeTruthy()
   })
 
-  it('accepts valid file types', () => {
-    const wrapper = mount(FileUpload)
-
+  it('accepts valid file types', async () => {
     const validFiles = [
       new File(['content'], 'image.jpg', { type: 'image/jpeg' }),
       new File(['content'], 'image.png', { type: 'image/png' }),
       new File(['content'], 'document.pdf', { type: 'application/pdf' }),
     ]
 
-    validFiles.forEach((file) => {
+    for (const file of validFiles) {
+      const wrapper = mount(FileUpload)
       const input = wrapper.find('input[type="file"]')
+      
+      // Create a FileList-like object
+      const fileList = {
+        0: file,
+        length: 1,
+        item: (index: number) => (index === 0 ? file : null),
+      }
+      
       Object.defineProperty(input.element, 'files', {
-        value: [file],
+        value: fileList,
         writable: false,
+        configurable: true,
       })
 
-      input.trigger('change')
+      await input.trigger('change')
 
       // Should emit fileSelected event
       expect(wrapper.emitted('fileSelected')).toBeTruthy()
-    })
+    }
   })
 
   it('handles drag and drop', async () => {
