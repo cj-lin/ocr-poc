@@ -1,50 +1,136 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+Version: 0.0.0 → 1.0.0
+Modified Principles: N/A (Initial Creation)
+Added Sections: 
+  - Core Principles (5 principles)
+  - 開發品質標準
+  - MVP 交付流程
+  - Governance
+Removed Sections: N/A
+Templates Status:
+  ✅ plan-template.md - Aligned with MVP and testing principles
+  ✅ spec-template.md - Aligned with user story prioritization
+  ✅ tasks-template.md - Aligned with incremental delivery
+Follow-up TODOs: None
+-->
 
-## Core Principles
+# OCR-POC 專案憲章
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## 核心原則
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### 一、高品質優先（不可妥協）
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**規範**：
+- 程式碼必須通過靜態分析和 linting 檢查
+- 所有公開函式必須包含類型標註
+- 必須遵循 DRY（Don't Repeat Yourself）原則
+- 複雜邏輯必須附帶註解說明意圖
+- 錯誤處理必須明確且可追蹤
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**理由**：高品質程式碼降低維護成本，提升長期開發速度，減少生產環境錯誤。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### 二、可測試性設計（不可妥協）
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**規範**：
+- 所有功能必須可獨立測試
+- 必須採用測試驅動開發（TDD）：測試撰寫 → 使用者確認 → 測試失敗 → 實作功能 → 測試通過
+- 單元測試覆蓋核心邏輯
+- 整合測試驗證端對端流程
+- 每個 User Story 必須可獨立測試和部署
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**理由**：可測試性確保程式碼正確性，支援快速迭代和重構，降低回歸風險。
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### 三、MVP 方法論（不可妥協）
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**規範**：
+- 每個功能必須從最小可行產品開始
+- 優先實作核心價值，推遲非必要功能
+- 遵循 YAGNI（You Aren't Gonna Need It）原則
+- User Story 必須按優先級（P1, P2, P3...）排序
+- P1 User Story 完成即為可交付 MVP
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+**理由**：MVP 方法論加速價值交付，降低過度開發風險，確保資源投入在真正需求上。
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### 四、避免過度設計
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**規範**：
+- 不引入未經證實需要的抽象層
+- 不預先優化效能
+- 架構複雜度必須有明確理由
+- 新增框架或設計模式必須在「複雜度追蹤」章節說明正當性
+- 預設採用最簡單可行方案
+
+**理由**：過度設計增加認知負擔、降低開發速度、提高維護成本，且常常無法預測未來需求。
+
+### 五、可觀測性與除錯能力
+
+**規範**：
+- 所有關鍵操作必須記錄結構化日誌
+- 錯誤訊息必須包含足夠上下文資訊
+- 輸入輸出必須可追蹤（檔案路徑、參數、結果）
+- OCR 處理過程必須可視覺化驗證（保留中間結果選項）
+- 效能關鍵路徑必須有計時日誌
+
+**理由**：OCR 系統處理複雜，必須能快速定位問題來源，可觀測性直接影響開發和維護效率。
+
+## 開發品質標準
+
+### 程式碼規範
+- 必須使用正體中文撰寫註解、文件和變數命名（程式碼關鍵字除外）
+- 函式長度不超過 50 行（特殊情況需註明理由）
+- 巢狀層級不超過 3 層
+- 魔術數字必須定義為常數並命名
+
+### 測試規範
+- 單元測試命名格式：`test_<功能>_<情境>_<預期結果>`
+- 整合測試必須涵蓋完整使用者流程
+- 測試資料必須版本控制且可重現
+- 失敗測試必須提供清晰的錯誤訊息
+
+### 文件規範
+- 每個模組必須有 docstring 說明用途
+- README 必須包含快速開始指南
+- API 變更必須更新相關文件
+- 設計決策必須記錄在 `specs/` 目錄
+
+## MVP 交付流程
+
+### 階段一：規格定義
+1. 使用者需求轉換為可測試的 User Stories
+2. User Stories 按優先級排序（P1 為 MVP 必要功能）
+3. 每個 User Story 定義獨立驗收標準
+
+### 階段二：開發執行
+1. P1 User Story 優先開發
+2. 每個 User Story 完成後獨立測試和驗證
+3. P1 完成即可交付 MVP
+4. 後續 P2、P3 按需增量交付
+
+### 階段三：品質驗證
+1. 所有測試通過
+2. 程式碼審查確認符合規範
+3. 快速開始指南可執行
+4. 效能符合定義目標
+
+## 治理規範
+
+### 憲章效力
+- 本憲章優先於所有其他開發實踐
+- 所有程式碼審查必須驗證憲章合規性
+- 違反核心原則必須在「複雜度追蹤」章節提供正當性
+
+### 修訂流程
+- 憲章修訂必須文件化並說明理由
+- 版本號遵循語義化版本規則：
+  - MAJOR：移除或重新定義核心原則
+  - MINOR：新增原則或擴充指導方針
+  - PATCH：文字修正、澄清說明
+- 修訂後必須更新所有相關模板和文件
+
+### 合規審查
+- 每個 Pull Request 必須自我檢查憲章合規性
+- 複雜度增加必須有文件化的正當理由
+- 定期審查專案是否符合 MVP 和簡化原則
+
+**版本**：1.0.0 | **批准日期**：2025-11-01 | **最後修訂**：2025-11-01

@@ -1,0 +1,399 @@
+openapi: 3.1.0
+info:
+  title: 身分證資訊擷取 API
+  version: 1.0.0
+  description: |
+    使用 Gemini AI 從身分證圖片或 PDF 中自動擷取結構化資訊的 REST API。
+    
+    **功能特點**：
+    - 支援 JPG、PNG、PDF 格式
+    - 自動辨識 6 個身分證欄位
+    - 檔案大小限制 10MB
+    - 不永久儲存上傳檔案
+  contact:
+    name: OCR-POC Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: 本地開發環境
+  - url: https://api.example.com
+    description: 生產環境（待定）
+
+tags:
+  - name: extraction
+    description: 身分證資訊擷取相關端點
+
+paths:
+  /api/extract:
+    post:
+      summary: 擷取身分證資訊
+      description: |
+        上傳身分證正面圖片或 PDF，系統使用 Gemini AI 自動辨識並回傳結構化資訊。
+        
+        **處理流程**：
+        1. 驗證檔案格式和大小
+        2. PDF 自動轉換為圖片（僅處理第一頁）
+        3. 呼叫 Gemini API 進行 OCR
+        4. 驗證和格式化欄位資料
+        5. 回傳結構化結果
+        
+        **注意事項**：
+        - 處理時間約 3-10 秒（取決於 Gemini API 回應速度）
+        - 上傳檔案不會永久儲存
+        - 建議使用清晰、正面、光線充足的圖片以獲得最佳辨識效果
+      operationId: extractIdCard
+      tags:
+        - extraction
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 身分證正面圖片或 PDF 檔案（最大 10MB）
+            encoding:
+              file:
+                contentType: image/jpeg, image/png, application/pdf
+      responses:
+        '200':
+          description: 成功擷取身分證資訊
+          headers:
+            X-Request-ID:
+              description: 請求追蹤 ID，用於日誌查詢
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionResult'
+              examples:
+                成功擷取所有欄位:
+                  value:
+                    request_id: "550e8400-e29b-41d4-a716-446655440000"
+                    status: "success"
+                    data:
+                      name: "王小明"
+                      id_number: "A123456789"
+                      birth_date: "80/05/20"
+                      gender: "男"
+                      issue_date: "95/12/01"
+                      issue_location: "台北市"
+                      confidence_score: 0.95
+                    processing_time: 3.25
+                    warnings: null
+                部分欄位辨識失敗:
+                  value:
+                    request_id: "650e8400-e29b-41d4-a716-446655440001"
+                    status: "partial"
+                    data:
+                      name: "李小華"
+                      id_number: "B234567890"
+                      birth_date: null
+                      gender: "女"
+                      issue_date: "85/11/10"
+                      issue_location: "台中市"
+                      confidence_score: 0.67
+                    processing_time: 4.12
+                    warnings:
+                      - "出生日期無法辨識，請手動輸入"
+        '400':
+          description: 請求錯誤（檔案格式不支援、PDF 無圖片等）
+          headers:
+            X-Request-ID:
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                檔案格式錯誤:
+                  value:
+                    request_id: "750e8400-e29b-41d4-a716-446655440002"
+                    error_code: "INVALID_FORMAT"
+                    message: "不支援的檔案格式，請上傳 JPG、PNG 或 PDF"
+                    details: null
+                PDF 無圖片:
+                  value:
+                    request_id: "850e8400-e29b-41d4-a716-446655440003"
+                    error_code: "NO_IMAGE_IN_PDF"
+                    message: "PDF 中未找到圖片，請上傳包含身分證圖片的檔案"
+                    details: null
+        '413':
+          description: 檔案過大（超過 10MB）
+          headers:
+            X-Request-ID:
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                request_id: "950e8400-e29b-41d4-a716-446655440004"
+                error_code: "FILE_TOO_LARGE"
+                message: "檔案大小超過限制（最大 10MB）"
+                details: null
+        '422':
+          description: 擷取的資料驗證失敗（欄位格式錯誤）
+          headers:
+            X-Request-ID:
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                request_id: "a50e8400-e29b-41d4-a716-446655440005"
+                error_code: "VALIDATION_ERROR"
+                message: "擷取的資料驗證失敗"
+                details: "身分證字號格式錯誤（應為 1 個英文字母 + 9 個數字）"
+        '429':
+          description: API 配額耗盡（Gemini API rate limit）
+          headers:
+            X-Request-ID:
+              schema:
+                type: string
+                format: uuid
+            Retry-After:
+              description: 建議重試等待秒數
+              schema:
+                type: integer
+                example: 60
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                request_id: "b50e8400-e29b-41d4-a716-446655440006"
+                error_code: "RATE_LIMITED"
+                message: "處理佇列中，預估等待時間：2 分鐘"
+                details: null
+        '500':
+          description: 伺服器內部錯誤（Gemini API 錯誤等）
+          headers:
+            X-Request-ID:
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                request_id: "c50e8400-e29b-41d4-a716-446655440007"
+                error_code: "OCR_FAILED"
+                message: "辨識服務暫時無法使用，請稍後再試"
+                details: null
+
+  /api/health:
+    get:
+      summary: 健康檢查
+      description: 檢查 API 服務和 Gemini API 連線狀態
+      operationId: healthCheck
+      tags:
+        - system
+      responses:
+        '200':
+          description: 服務正常運作
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded]
+                    description: 服務狀態
+                  gemini_api:
+                    type: string
+                    enum: [connected, disconnected]
+                    description: Gemini API 連線狀態
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: 檢查時間戳記
+              example:
+                status: "healthy"
+                gemini_api: "connected"
+                timestamp: "2025-11-01T10:30:00Z"
+        '503':
+          description: 服務無法使用
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  error:
+                    type: string
+              example:
+                status: "unhealthy"
+                error: "Gemini API 連線失敗"
+
+components:
+  schemas:
+    IdCardInfo:
+      type: object
+      required:
+        - name
+        - id_number
+        - birth_date
+        - gender
+        - issue_date
+        - issue_location
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 10
+          description: 姓名
+          example: "王小明"
+        id_number:
+          type: string
+          pattern: '^[A-Z][12]\d{8}$'
+          description: 身分證字號（1 個英文字母 + 9 個數字）
+          example: "A123456789"
+        birth_date:
+          type: string
+          pattern: '^\d{1,3}/(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])$'
+          description: 出生日期（民國年格式 YYY/MM/DD）
+          example: "80/05/20"
+        gender:
+          type: string
+          enum: [男, 女]
+          description: 性別
+          example: "男"
+        issue_date:
+          type: string
+          pattern: '^\d{1,3}/(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])$'
+          description: 發證日期（民國年格式 YYY/MM/DD）
+          example: "95/12/01"
+        issue_location:
+          type: string
+          enum:
+            - 台北市
+            - 新北市
+            - 桃園市
+            - 台中市
+            - 台南市
+            - 高雄市
+            - 基隆市
+            - 新竹市
+            - 嘉義市
+            - 新竹縣
+            - 苗栗縣
+            - 彰化縣
+            - 南投縣
+            - 雲林縣
+            - 嘉義縣
+            - 屏東縣
+            - 宜蘭縣
+            - 花蓮縣
+            - 台東縣
+            - 澎湖縣
+            - 金門縣
+            - 連江縣
+          description: 發證地點（台灣縣市）
+          example: "台北市"
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: 辨識信心分數（由 Gemini API 提供，可選）
+          example: 0.95
+      description: 從身分證擷取的結構化資訊
+
+    ExtractionResult:
+      type: object
+      required:
+        - request_id
+        - status
+        - data
+        - processing_time
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: 請求追蹤 ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          type: string
+          enum: [success, partial]
+          description: |
+            處理狀態：
+            - success: 所有欄位成功擷取
+            - partial: 部分欄位無法辨識
+          example: "success"
+        data:
+          $ref: '#/components/schemas/IdCardInfo'
+        processing_time:
+          type: number
+          format: float
+          minimum: 0
+          description: 處理耗時（秒）
+          example: 3.25
+        warnings:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: 警告訊息（如部分欄位無法辨識）
+          example: null
+      description: API 成功回應結果
+
+    ErrorResponse:
+      type: object
+      required:
+        - request_id
+        - error_code
+        - message
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: 請求追蹤 ID（用於日誌查詢）
+          example: "750e8400-e29b-41d4-a716-446655440002"
+        error_code:
+          type: string
+          enum:
+            - FILE_TOO_LARGE
+            - INVALID_FORMAT
+            - NO_IMAGE_IN_PDF
+            - OCR_FAILED
+            - RATE_LIMITED
+            - VALIDATION_ERROR
+          description: 錯誤代碼
+          example: "INVALID_FORMAT"
+        message:
+          type: string
+          description: 使用者友善的錯誤訊息（正體中文）
+          example: "不支援的檔案格式，請上傳 JPG、PNG 或 PDF"
+        details:
+          type: string
+          nullable: true
+          description: 技術細節（僅開發模式提供）
+          example: null
+      description: API 錯誤回應
+
+  securitySchemes: {}
+  # 目前不需要認證機制（MVP 階段）
+
+security: []
+# 無需身份驗證（MVP 階段）
